@@ -2,7 +2,6 @@ package com.itsvks.layouteditor.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -11,11 +10,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.ArrayAdapter
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.Companion.isPhotoPickerAvailable
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
 import androidx.annotation.RequiresApi
 import androidx.viewpager2.widget.ViewPager2
@@ -70,22 +69,22 @@ class ResourceManagerActivity : BaseActivity() {
     adapter.addFragmentToAdapter(
       DrawableFragment(drawableList),
       getString(R.string.drawable),
-      getDrawable(R.drawable.image_outline)
+      getDrawable(R.drawable.image_outline)!!
     )
     adapter.addFragmentToAdapter(
       ColorFragment(),
       getString(R.string.color),
-      getDrawable(R.drawable.palette_outline)
+      getDrawable(R.drawable.palette_outline)!!
     )
     adapter.addFragmentToAdapter(
       StringFragment(),
       getString(R.string.string),
-      getDrawable(R.drawable.format_letter_case)
+      getDrawable(R.drawable.format_letter_case)!!
     )
     adapter.addFragmentToAdapter(
       FontFragment(),
       getString(R.string.font),
-      getDrawable(R.drawable.format_font)
+      getDrawable(R.drawable.format_font)!!
     )
     adapter.setupPager(ViewPager2.ORIENTATION_HORIZONTAL)
     adapter.setupMediatorWithIcon()
@@ -194,7 +193,7 @@ class ResourceManagerActivity : BaseActivity() {
 
   @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
   private fun launchPhotoPicker() {
-    if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable()) {
+    if (isPhotoPickerAvailable(this)) {
       if (checkSelfPermission(Manifest.permission.READ_MEDIA_IMAGES)
         == PackageManager.PERMISSION_DENIED
       ) {
