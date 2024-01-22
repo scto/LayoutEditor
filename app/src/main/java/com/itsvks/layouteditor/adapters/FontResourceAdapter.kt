@@ -1,220 +1,203 @@
-package com.itsvks.layouteditor.adapters;
+package com.itsvks.layouteditor.adapters
 
-import android.content.Context;
-import android.graphics.Typeface;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.TextView;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.recyclerview.widget.RecyclerView;
-import com.blankj.utilcode.util.ClipboardUtils;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.itsvks.layouteditor.ProjectFile;
-import com.itsvks.layouteditor.adapters.models.FontItem;
-import com.itsvks.layouteditor.databinding.LayoutFontItemBinding;
-import com.itsvks.layouteditor.R;
-import com.itsvks.layouteditor.databinding.TextinputlayoutBinding;
-import com.itsvks.layouteditor.managers.ProjectManager;
-import com.itsvks.layouteditor.utils.FileUtil;
-import com.itsvks.layouteditor.utils.NameErrorChecker;
-import com.itsvks.layouteditor.utils.SBUtils;
-import com.itsvks.layouteditor.utils.Utils;
-import java.io.File;
-import java.util.List;
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.DialogInterface
+import android.graphics.Typeface
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.animation.AnimationUtils
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.widget.PopupMenu
+import androidx.recyclerview.widget.RecyclerView
+import com.blankj.utilcode.util.ClipboardUtils
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.itsvks.layouteditor.R
+import com.itsvks.layouteditor.adapters.models.FontItem
+import com.itsvks.layouteditor.databinding.LayoutFontItemBinding
+import com.itsvks.layouteditor.databinding.TextinputlayoutBinding
+import com.itsvks.layouteditor.managers.ProjectManager.Companion.instance
+import com.itsvks.layouteditor.utils.FileUtil.deleteFile
+import com.itsvks.layouteditor.utils.FileUtil.getLastSegmentFromPath
+import com.itsvks.layouteditor.utils.NameErrorChecker
+import com.itsvks.layouteditor.utils.SBUtils
+import com.itsvks.layouteditor.utils.SBUtils.Companion.make
+import com.itsvks.layouteditor.utils.Utils
+import java.io.File
 
-public class FontResourceAdapter extends RecyclerView.Adapter<FontResourceAdapter.VH> {
+class FontResourceAdapter(private val fontList: MutableList<FontItem>) :
+  RecyclerView.Adapter<FontResourceAdapter.VH>() {
+  private val project = instance.openedProject
 
-  private List<FontItem> fontList;
-  private ProjectFile project;
-
-  public FontResourceAdapter(List<FontItem> fontList) {
-    this.fontList = fontList;
-    this.project = ProjectManager.getInstance().getOpenedProject();
+  class VH(var binding: LayoutFontItemBinding) : RecyclerView.ViewHolder(
+    binding.root
+  ) {
+    var fontName = binding.name
+    var fontLook = binding.fontLook
   }
 
-  public class VH extends RecyclerView.ViewHolder {
-    LayoutFontItemBinding binding;
-    TextView fontName;
-    TextView fontLook;
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+    return VH(
+      LayoutFontItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
+  }
 
-    public VH(LayoutFontItemBinding binding) {
-      super(binding.getRoot());
-      this.binding = binding;
+  override fun onBindViewHolder(holder: VH, position: Int) {
+    val fontName = fontList[position].name
+    holder
+      .binding
+      .root.animation = AnimationUtils.loadAnimation(
+      holder.itemView.context, R.anim.project_list_animation
+    )
+    holder.fontName.text = fontName.substring(0, fontName.lastIndexOf("."))
+    holder.fontLook.typeface = Typeface.createFromFile(File(fontList[position].path))
 
-      this.fontName = binding.name;
-      this.fontLook = binding.fontLook;
+    holder
+      .itemView
+      .setOnClickListener {
+        ClipboardUtils.copyText(fontName.substring(0, fontName.lastIndexOf(".")))
+        make(
+          holder.binding.root,
+          "${it.context.getString(R.string.copied)} $fontName"
+        )
+          .setSlideAnimation()
+          .showAsSuccess()
+      }
+    holder.binding.menu.setOnClickListener {
+      showOptions(
+        it,
+        holder.absoluteAdapterPosition,
+        holder
+      )
     }
   }
 
-  @Override
-  public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-    return new VH(
-        LayoutFontItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
+  override fun getItemCount(): Int {
+    return fontList.size
   }
 
-  @Override
-  public void onBindViewHolder(VH holder, int position) {
-    var fontName = fontList.get(position).name;
-    holder
-        .binding
-        .getRoot()
-        .setAnimation(
-            AnimationUtils.loadAnimation(
-                holder.itemView.getContext(), R.anim.project_list_animation));
-    holder.fontName.setText(fontName.substring(0, fontName.lastIndexOf(".")));
-    holder.fontLook.setTypeface(
-        Typeface.createFromFile(new File(fontList.get(position).path)));
-
-    holder
-        .binding
-        .getRoot()
-        .setOnClickListener(
-            v -> {
-              ClipboardUtils.copyText(fontName.substring(0, fontName.lastIndexOf(".")));
-              SBUtils.make(
-                      holder.binding.getRoot(),
-                      v.getContext().getString(R.string.copied) + " ".concat(fontName))
-                  .setSlideAnimation()
-                  .showAsSuccess();
-            });
-    holder.binding.menu.setOnClickListener(v -> showOptions(v, position, holder));
-  }
-
-  @Override
-  public int getItemCount() {
-    return fontList.size();
-  }
-
-  private void showOptions(View v, int position, VH holder) {
-    final PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
-    popupMenu.inflate(R.menu.menu_font);
-    popupMenu.setOnMenuItemClickListener(
-        new PopupMenu.OnMenuItemClickListener() {
-
-          @Override
-          public boolean onMenuItemClick(MenuItem item) {
-
-            var id = item.getItemId();
-            if (id == R.id.menu_delete) {
-              new MaterialAlertDialogBuilder(v.getContext())
-                .setTitle(R.string.remove_font)
-                .setMessage(R.string.msg_remove_font)
-                .setNegativeButton(R.string.no, (d, w) -> d.dismiss())
-                .setPositiveButton(
-                  R.string.yes,
-                  (d, w) -> {
-                    var name = fontList.get(position).name;
-                    if (name.substring(0, name.lastIndexOf(".")).equals("default_font")) {
-                      SBUtils.make(
-                          v,
-                          v.getContext()
-                            .getString(
-                              R.string.msg_cannot_delete_default, "font"))
-                        .setFadeAnimation()
-                        .setType(SBUtils.Type.INFO)
-                        .show();
-                    } else {
-                      FileUtil.deleteFile(fontList.get(position).path);
-                      fontList.remove(position);
-                      notifyDataSetChanged();
-                    }
-                  })
-                .show();
-              return true;
-            } else if (id == R.id.menu_rename) {
-              rename(v, position, holder);
-              return true;
+  private fun showOptions(v: View, position: Int, holder: VH) {
+    val popupMenu = PopupMenu(v.context, v)
+    popupMenu.inflate(R.menu.menu_font)
+    popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+      val id = item.itemId
+      when (id) {
+        R.id.menu_delete -> {
+          MaterialAlertDialogBuilder(v.context)
+            .setTitle(R.string.remove_font)
+            .setMessage(R.string.msg_remove_font)
+            .setNegativeButton(R.string.no) { d, _ -> d.dismiss() }
+            .setPositiveButton(
+              R.string.yes
+            ) { _, _ ->
+              val name = fontList[position].name
+              if (name.substring(0, name.lastIndexOf(".")) == "default_font") {
+                make(
+                  v,
+                  v.context
+                    .getString(
+                      R.string.msg_cannot_delete_default, "font"
+                    )
+                )
+                  .setFadeAnimation()
+                  .setType(SBUtils.Type.INFO)
+                  .show()
+              } else {
+                deleteFile(fontList[position].path)
+                fontList.removeAt(position)
+                notifyItemRemoved(position)
+              }
             }
-            return false;
-          }
-        });
+            .show()
+          true
+        }
+        R.id.menu_rename -> {
+          rename(v, position, holder)
+          true
+        }
+        else -> false
+      }
+    }
 
-    popupMenu.show();
+    popupMenu.show()
   }
 
-  private void rename(View v, int position, VH holder) {
-    final String lastSegment = FileUtil.getLastSegmentFromPath(fontList.get(position).path);
-    final String fileName = lastSegment.substring(0, lastSegment.lastIndexOf("."));
-    final String extension =
-        lastSegment.substring(lastSegment.lastIndexOf("."), lastSegment.length());
-    final MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(v.getContext());
-    final TextinputlayoutBinding bind =
-        TextinputlayoutBinding.inflate(builder.create().getLayoutInflater());
-    final TextInputEditText editText = bind.textinputEdittext;
-    final TextInputLayout inputLayout = bind.textinputLayout;
-    editText.setText(fileName);
-    var padding = Utils.pxToDp(builder.getContext(), 10);
-    builder.setView(bind.getRoot(), padding, padding, padding, padding);
-    builder.setTitle(R.string.rename_font);
-    builder.setNegativeButton(R.string.cancel, (di, which) -> {});
+  @SuppressLint("RestrictedApi")
+  private fun rename(v: View, position: Int, holder: VH) {
+    val lastSegment = getLastSegmentFromPath(fontList[position].path)
+    val fileName = lastSegment.substring(0, lastSegment.lastIndexOf("."))
+    val extension =
+      lastSegment.substring(lastSegment.lastIndexOf("."))
+    val builder = MaterialAlertDialogBuilder(v.context)
+    val bind =
+      TextinputlayoutBinding.inflate(builder.create().layoutInflater)
+    val editText = bind.textinputEdittext
+    val inputLayout = bind.textinputLayout
+    editText.setText(fileName)
+    val padding = Utils.pxToDp(builder.context, 10)
+    @Suppress("DEPRECATION")
+    builder.setView(bind.root, padding, padding, padding, padding)
+    builder.setTitle(R.string.rename_font)
+    builder.setNegativeButton(R.string.cancel) { _, _ -> }
     builder.setPositiveButton(
-        R.string.rename,
-        (di, which) -> {
-          if (fontList
-              .get(position).name
-              .substring(0, fontList.get(position).name.lastIndexOf("."))
-              .equals("default_font")) {
-            SBUtils.make(v, v.getContext().getString(R.string.msg_cannot_rename_default, "font"))
-                .setFadeAnimation()
-                .setType(SBUtils.Type.INFO)
-                .show();
-          } else {
-            String fontPath = project.getFontPath();
+      R.string.rename
+    ) { _, _ ->
+      if (fontList[position].name
+          .substring(0, fontList[position].name.lastIndexOf("."))
+        == "default_font"
+      ) {
+        make(v, v.context.getString(R.string.msg_cannot_rename_default, "font"))
+          .setFadeAnimation()
+          .setType(SBUtils.Type.INFO)
+          .show()
+      } else {
+        val fontPath = project!!.fontPath
 
-            String toPath = fontPath + editText.getText().toString() + extension;
-            File newFile = new File(toPath);
-            File oldFile = new File(fontList.get(position).path);
-            oldFile.renameTo(newFile);
+        val toPath = fontPath + editText.text.toString() + extension
+        val newFile = File(toPath)
+        val oldFile = File(fontList[position].path)
+        oldFile.renameTo(newFile)
 
-            String name = editText.getText().toString();
-            fontList.get(position).path = toPath;
-            fontList.get(position).name = FileUtil.getLastSegmentFromPath(toPath);
-            holder.fontName.setText(name);
-            holder.fontLook.setTypeface(
-                Typeface.createFromFile(new File(fontList.get(position).path)));
-            notifyItemChanged(position);
-          }
-        });
+        val name = editText.text.toString()
+        fontList[position].path = toPath
+        fontList[position].name = getLastSegmentFromPath(toPath)
+        holder.fontName.text = name
+        holder.fontLook.typeface = Typeface.createFromFile(File(fontList[position].path))
+        notifyItemChanged(position)
+      }
+    }
 
-    final AlertDialog dialog = builder.create();
-    dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-    dialog.show();
+    val dialog = builder.create()
+    dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+    dialog.show()
 
     editText.addTextChangedListener(
-        new TextWatcher() {
+      object : TextWatcher {
+        override fun beforeTextChanged(p1: CharSequence, p2: Int, p3: Int, p4: Int) {}
 
-          @Override
-          public void beforeTextChanged(CharSequence p1, int p2, int p3, int p4) {}
+        override fun onTextChanged(p1: CharSequence, p2: Int, p3: Int, p4: Int) {}
 
-          @Override
-          public void onTextChanged(CharSequence p1, int p2, int p3, int p4) {}
+        override fun afterTextChanged(p1: Editable) {
+          NameErrorChecker.checkForFont(
+            editText.text.toString(), inputLayout, dialog, fontList, position
+          )
+        }
+      })
 
-          @Override
-          public void afterTextChanged(Editable p1) {
-            NameErrorChecker.checkForFont(
-                editText.getText().toString(), inputLayout, dialog, fontList, position);
-          }
-        });
+    NameErrorChecker.checkForFont(fileName, inputLayout, dialog, fontList, position)
 
-    NameErrorChecker.checkForFont(fileName, inputLayout, dialog, fontList, position);
+    editText.requestFocus()
+    val inputMethodManager =
+      v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT)
 
-    editText.requestFocus();
-    InputMethodManager inputMethodManager =
-        (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-    inputMethodManager.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
-
-    if (!editText.getText().toString().equals("")) {
-      editText.setSelection(0, editText.getText().toString().length());
+    if (editText.text.toString().isNotEmpty()) {
+      editText.setSelection(0, editText.text.toString().length)
     }
   }
 }

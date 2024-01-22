@@ -1,36 +1,32 @@
-package com.itsvks.layouteditor.activities;
+package com.itsvks.layouteditor.activities
 
-import android.os.Bundle;
-import com.itsvks.layouteditor.BaseActivity;
-import com.itsvks.layouteditor.databinding.ActivityPreviewDrawableBinding;
-import com.itsvks.layouteditor.interfaces.PreviewDrawableListener;
-import com.itsvks.layouteditor.R;
-import com.itsvks.layouteditor.views.AlphaPatternDrawable;
+import android.os.Bundle
+import android.widget.ImageView
+import androidx.appcompat.app.ActionBar
+import com.itsvks.layouteditor.BaseActivity
+import com.itsvks.layouteditor.R
+import com.itsvks.layouteditor.databinding.ActivityPreviewDrawableBinding
+import com.itsvks.layouteditor.views.AlphaPatternDrawable
 
-public class PreviewDrawableActivity extends BaseActivity {
+class PreviewDrawableActivity : BaseActivity() {
+  private lateinit var binding: ActivityPreviewDrawableBinding
 
-  private ActivityPreviewDrawableBinding binding;
-  private static PreviewDrawableListener listener;
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    binding = ActivityPreviewDrawableBinding.inflate(layoutInflater)
+    setContentView(binding.getRoot())
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    binding = ActivityPreviewDrawableBinding.inflate(getLayoutInflater());
-    setContentView(binding.getRoot());
+    setSupportActionBar(binding.topAppBar)
+    supportActionBar!!.setTitle(R.string.preview_drawable)
 
-    setSupportActionBar(binding.topAppBar);
-    getSupportActionBar().setTitle(R.string.preview_drawable);
+    binding.topAppBar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+    binding.background.setImageDrawable(AlphaPatternDrawable(24))
 
-    binding.topAppBar.setNavigationOnClickListener(v -> onBackPressed());
-    binding.background.setImageDrawable(new AlphaPatternDrawable(24));
-
-    if (listener != null) {
-      listener.showInImage(binding.mainImage);
-      listener.setSubtitle(getSupportActionBar());
-    }
+    onLoad(binding.mainImage, supportActionBar)
   }
 
-  public static void setListener(PreviewDrawableListener viewDrawableListener) {
-    listener = viewDrawableListener;
+  companion object {
+    @JvmStatic
+    var onLoad: (ImageView, ActionBar?) -> Unit = { _, _ -> }
   }
 }

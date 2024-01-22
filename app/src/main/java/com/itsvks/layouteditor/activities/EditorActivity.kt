@@ -278,8 +278,8 @@ class EditorActivity : BaseActivity() {
         createLayout()
       } else {
         replaceListViewAdapter(layoutAdapter)
-        binding.title.text = ""
-        binding.paletteText.text = getString(string.layouts)
+        binding.title.text = getString(string.layouts)
+        binding.paletteText.text = project.name
         // binding.paletteNavigation.getMenu().getItem(binding.paletteNavigation.getSelectedItemId()).setChecked(false);
         fab.setImageResource(R.drawable.plus)
         TooltipCompat.setTooltipText(fab, "Create new layout")
@@ -396,9 +396,7 @@ class EditorActivity : BaseActivity() {
   override fun onResume() {
     super.onResume()
     project.drawables?.let {
-      DrawableManager.loadFromFiles(
-        it
-      )
+      DrawableManager.loadFromFiles(it)
     }
     if (undoRedo != null) undoRedo!!.updateButtons()
   }
@@ -460,24 +458,27 @@ class EditorActivity : BaseActivity() {
   private fun setToolbarButtonOnClickListener(binding: ActivityEditorBinding) {
     TooltipCompat.setTooltipText(binding.viewType, "View Type")
     TooltipCompat.setTooltipText(binding.deviceSize, "Size")
-    binding.viewType.setOnClickListener { v: View ->
-      val popupMenu = PopupMenu(v.context, v)
+    binding.viewType.setOnClickListener { view ->
+      val popupMenu = PopupMenu(view.context, view)
       popupMenu.inflate(R.menu.menu_view_type)
-      popupMenu.setOnMenuItemClickListener { item: MenuItem ->
-        val id = item.itemId
-        if (id == R.id.view_type_design) {
-          binding.editorLayout.viewType = DesignEditor.ViewType.DESIGN
-        } else if (id == R.id.view_type_blueprint) {
-          binding.editorLayout.viewType = DesignEditor.ViewType.BLUEPRINT
+      popupMenu.setOnMenuItemClickListener {
+        val id = it.itemId
+        when (id) {
+          R.id.view_type_design -> {
+            binding.editorLayout.viewType = DesignEditor.ViewType.DESIGN
+          }
+          R.id.view_type_blueprint -> {
+            binding.editorLayout.viewType = DesignEditor.ViewType.BLUEPRINT
+          }
         }
         true
       }
       popupMenu.show()
     }
-    binding.deviceSize.setOnClickListener { v: View ->
-      val popupMenu = PopupMenu(v.context, v)
+    binding.deviceSize.setOnClickListener {
+      val popupMenu = PopupMenu(it.context, it)
       popupMenu.inflate(R.menu.menu_device_size)
-      popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+      popupMenu.setOnMenuItemClickListener { item ->
         val id = item.itemId
         when (id) {
           R.id.device_size_small -> {

@@ -2,20 +2,16 @@ package com.itsvks.layouteditor.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.TooltipCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +24,6 @@ import com.itsvks.layouteditor.activities.PreviewDrawableActivity
 import com.itsvks.layouteditor.adapters.models.DrawableFile
 import com.itsvks.layouteditor.databinding.LayoutDrawableItemBinding
 import com.itsvks.layouteditor.databinding.TextinputlayoutBinding
-import com.itsvks.layouteditor.interfaces.PreviewDrawableListener
 import com.itsvks.layouteditor.managers.ProjectManager.Companion.instance
 import com.itsvks.layouteditor.utils.FileUtil.deleteFile
 import com.itsvks.layouteditor.utils.FileUtil.getLastSegmentFromPath
@@ -71,7 +66,7 @@ class DrawableResourceAdapter(private val drawableList: MutableList<DrawableFile
     holder.imageType.text = "Drawable"
 
     val version = drawableList[position].versions
-    holder.versions.text = version.toString() + " version" + (if (version > 1) "s" else "")
+    holder.versions.text = "$version version${if (version > 1) "s" else ""}"
     holder.drawableBackground.setImageDrawable(AlphaPatternDrawable(16))
 
     TooltipCompat.setTooltipText(
@@ -88,18 +83,11 @@ class DrawableResourceAdapter(private val drawableList: MutableList<DrawableFile
       )
     }
 
-    val listener: PreviewDrawableListener =
-      object : PreviewDrawableListener {
-        override fun showInImage(imageView: ImageView) {
-          imageView.setImageDrawable(drawableList[position].drawable)
-        }
-
-        override fun setSubtitle(actionBar: ActionBar) {
-          actionBar.subtitle = name
-        }
-      }
     holder.itemView.setOnClickListener {
-      PreviewDrawableActivity.setListener(listener)
+      PreviewDrawableActivity.onLoad = { imageView, actionBar ->
+        imageView.setImageDrawable(drawableList[holder.absoluteAdapterPosition].drawable)
+        actionBar?.subtitle = name
+      }
       it.context.startActivity(Intent(it.context, PreviewDrawableActivity::class.java))
     }
   }
@@ -122,7 +110,7 @@ class DrawableResourceAdapter(private val drawableList: MutableList<DrawableFile
           make(holder.binding.root, v.context.getString(R.string.copied))
             .setSlideAnimation()
             .showAsSuccess()
-          return@setOnMenuItemClickListener true
+          true
         }
 
         R.id.menu_delete -> {
@@ -152,12 +140,12 @@ class DrawableResourceAdapter(private val drawableList: MutableList<DrawableFile
               }
             }
             .show()
-          return@setOnMenuItemClickListener true
+          true
         }
 
         R.id.menu_rename -> {
           rename(v, position, holder)
-          return@setOnMenuItemClickListener true
+          true
         }
 
         else -> false

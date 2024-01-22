@@ -22,7 +22,7 @@ open class BaseActivity : AppCompatActivity() {
     window.statusBarColor = SurfaceColors.SURFACE_0.getColor(this)
   }
 
-  fun openUrl(url: String?) {
+  fun openUrl(url: String) {
     try {
       Intent(Intent.ACTION_VIEW).apply {
         data = Uri.parse(url)

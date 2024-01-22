@@ -1,79 +1,65 @@
-package com.itsvks.layouteditor.adapters;
+package com.itsvks.layouteditor.adapters
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
-import androidx.annotation.NonNull;
-import androidx.core.view.ViewCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.RecyclerView;
-import com.blankj.utilcode.util.VibrateUtils;
-import com.itsvks.layouteditor.R;
-import com.itsvks.layouteditor.databinding.LayoutPaletteItemBinding;
-import com.itsvks.layouteditor.utils.InvokeUtil;
-import java.util.HashMap;
-import java.util.List;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.View.DragShadowBuilder
+import android.view.ViewGroup
+import android.view.animation.AnimationUtils
+import androidx.core.view.ViewCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.RecyclerView
+import com.itsvks.layouteditor.R
+import com.itsvks.layouteditor.databinding.LayoutPaletteItemBinding
+import com.itsvks.layouteditor.utils.InvokeUtil.getMipmapId
+import com.itsvks.layouteditor.utils.InvokeUtil.getSuperClassName
 
-public class PaletteListAdapter extends RecyclerView.Adapter<PaletteListAdapter.ViewHolder> {
+class PaletteListAdapter(private val drawerLayout: DrawerLayout) :
+  RecyclerView.Adapter<PaletteListAdapter.ViewHolder>() {
+  private lateinit var tab: List<HashMap<String, Any>>
 
-  private List<HashMap<String, Object>> tab;
-  private DrawerLayout drawerLayout;
-
-  public PaletteListAdapter(DrawerLayout drawerLayout) {
-    this.drawerLayout = drawerLayout;
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    return ViewHolder(
+      LayoutPaletteItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
   }
 
-  @Override
-  public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-    return new ViewHolder(
-        LayoutPaletteItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-  }
+  override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    val widgetItem = tab[position]
 
-  @Override
-  public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-    HashMap<String, Object> widgetItem = tab.get(position);
+    val binding = holder.binding
 
-    var binding = holder.binding;
-
-    binding.icon.setImageResource(InvokeUtil.getMipmapId(widgetItem.get("iconName").toString()));
-    binding.name.setText(widgetItem.get("name").toString());
-    binding.className.setText(InvokeUtil.getSuperClassName(widgetItem.get("className").toString()));
+    binding.icon.setImageResource(getMipmapId(widgetItem["iconName"].toString()))
+    binding.name.text = widgetItem["name"].toString()
+    binding.className.text = getSuperClassName(widgetItem["className"].toString())
 
     binding
-        .getRoot()
-        .setOnLongClickListener(
-            v -> {
-              if (ViewCompat.startDragAndDrop(
-                  v, null, new View.DragShadowBuilder(v), widgetItem, 0)) {
-                drawerLayout.closeDrawers();
-              }
-              return true;
-            });
+      .root
+      .setOnLongClickListener {
+        if (ViewCompat.startDragAndDrop(
+            it, null, DragShadowBuilder(it), widgetItem, 0
+          )
+        ) {
+          drawerLayout.closeDrawers()
+        }
+        true
+      }
 
     binding
-        .getRoot()
-        .setAnimation(
-            AnimationUtils.loadAnimation(
-                holder.itemView.getContext(), R.anim.project_list_animation));
+      .root.animation = AnimationUtils.loadAnimation(
+      holder.itemView.context, R.anim.project_list_animation
+    )
   }
 
-  @Override
-  public int getItemCount() {
-    return tab != null ? tab.size() : 0;
+  override fun getItemCount(): Int {
+    return tab.size
   }
 
-  public void submitPaletteList(List<HashMap<String, Object>> tab) {
-    this.tab = tab;
-    notifyDataSetChanged();
+  fun submitPaletteList(tab: List<HashMap<String, Any>>) {
+    this.tab = tab
+    notifyDataSetChanged()
   }
 
-  public class ViewHolder extends RecyclerView.ViewHolder {
-    LayoutPaletteItemBinding binding;
-
-    public ViewHolder(@NonNull LayoutPaletteItemBinding binding) {
-      super(binding.getRoot());
-      this.binding = binding;
-    }
-  }
+  class ViewHolder(var binding: LayoutPaletteItemBinding) : RecyclerView.ViewHolder(
+    binding.root
+  )
 }

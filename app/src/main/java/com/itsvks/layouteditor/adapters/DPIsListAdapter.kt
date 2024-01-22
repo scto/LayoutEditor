@@ -1,93 +1,81 @@
-package com.itsvks.layouteditor.adapters;
+package com.itsvks.layouteditor.adapters
 
-import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
-import androidx.recyclerview.widget.RecyclerView;
-import com.itsvks.layouteditor.databinding.LayoutSelectDpiItemBinding;
-import com.itsvks.layouteditor.utils.Utils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.itsvks.layouteditor.databinding.LayoutSelectDpiItemBinding
+import com.itsvks.layouteditor.utils.Utils
+import java.util.Collections
 
-public class DPIsListAdapter extends RecyclerView.Adapter<DPIsListAdapter.VH> {
-  private Drawable image;
-  private List<String> dpiList;
-  private List<Boolean> mSelectedItems;
+class DPIsListAdapter(private val image: Drawable) : RecyclerView.Adapter<DPIsListAdapter.VH>() {
+  private val dpiList: MutableList<String> = ArrayList()
+  private val mSelectedItems: MutableList<Boolean>
 
-  public DPIsListAdapter(Drawable image) {
-    this.image = image;
-    dpiList = new ArrayList<>();
-    dpiList.add("ldpi");
-    dpiList.add("mdpi");
-    dpiList.add("hdpi");
-    dpiList.add("xhdpi");
-    dpiList.add("xxhdpi");
-    dpiList.add("xxxhdpi");
+  init {
+    dpiList.add("ldpi")
+    dpiList.add("mdpi")
+    dpiList.add("hdpi")
+    dpiList.add("xhdpi")
+    dpiList.add("xxhdpi")
+    dpiList.add("xxxhdpi")
 
-    mSelectedItems = new ArrayList<>(Collections.nCopies(dpiList.size(), false));
+    mSelectedItems = ArrayList(Collections.nCopies(dpiList.size, false))
   }
 
-  public class VH extends RecyclerView.ViewHolder {
-    public LinearLayout shadowView;
-    public ImageView image;
-    public CheckBox checkbox;
-    public TextView dpiName;
+  inner class VH(binding: LayoutSelectDpiItemBinding) : RecyclerView.ViewHolder(binding.root) {
+    var shadowView = binding.shadowView
+    var image = binding.image
+    var checkbox = binding.checkbox
+    var dpiName = binding.dpiName
+  }
 
-    public VH(LayoutSelectDpiItemBinding binding) {
-      super(binding.getRoot());
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+    return VH(
+      LayoutSelectDpiItemBinding.inflate(
+        LayoutInflater.from(parent.context), parent, false
+      )
+    )
+  }
 
-      shadowView = binding.shadowView;
-      image = binding.image;
-      checkbox = binding.checkbox;
-      dpiName = binding.dpiName;
+  @SuppressLint("SetTextI18n")
+  override fun onBindViewHolder(holder: VH, position: Int) {
+    holder.image.layoutParams =
+      RelativeLayout.LayoutParams(Utils.getScreenWidth() / 2, Utils.getScreenWidth() / 2)
+    holder.shadowView.layoutParams =
+      RelativeLayout.LayoutParams(Utils.getScreenWidth() / 2, Utils.getScreenWidth() / 2)
+    val dpi = dpiList[position]
+    holder.image.setImageDrawable(image)
+    holder.dpiName.text = "drawable-$dpi"
+    holder.checkbox.isChecked = mSelectedItems[position]
+    holder.shadowView.visibility = if (mSelectedItems[position]) View.VISIBLE else View.INVISIBLE
+
+    holder.itemView.setOnClickListener {
+      val isChecked = !mSelectedItems[position]
+      mSelectedItems[position] = isChecked
+      holder.checkbox.isChecked = isChecked
     }
   }
 
-  @Override
-  public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-    return new VH(
-        LayoutSelectDpiItemBinding.inflate(
-            LayoutInflater.from(parent.getContext()), parent, false));
+  override fun getItemCount(): Int {
+    return dpiList.size
   }
 
-  @Override
-  public void onBindViewHolder(VH holder, int position) {
-    holder.image.setLayoutParams(
-        new RelativeLayout.LayoutParams(Utils.getScreenWidth() / 2, Utils.getScreenWidth() / 2));
-    holder.shadowView.setLayoutParams(
-        new RelativeLayout.LayoutParams(Utils.getScreenWidth() / 2, Utils.getScreenWidth() / 2));
-    String dpi = dpiList.get(position);
-    holder.image.setImageDrawable(image);
-    holder.dpiName.setText("drawable-".concat(dpi));
-    holder.checkbox.setChecked(mSelectedItems.get(position));
-    holder.shadowView.setVisibility(mSelectedItems.get(position) ? View.VISIBLE : View.INVISIBLE);
-    holder.itemView.setOnClickListener(
-        view -> {
-          boolean isChecked = !mSelectedItems.get(position);
-          mSelectedItems.set(position, isChecked);
-          holder.checkbox.setChecked(isChecked);
-        });
-  }
-
-  @Override
-  public int getItemCount() {
-    return dpiList.size();
-  }
-
-  public List<String> getSelectedItems() {
-    List<String> selectedItems = new ArrayList<>();
-    for (int i = 0; i < mSelectedItems.size(); i++) {
-      if (mSelectedItems.get(i)) {
-        selectedItems.add(dpiList.get(i));
+  val selectedItems: List<String>
+    get() {
+      val selectedItems: MutableList<String> = ArrayList()
+      for (i in mSelectedItems.indices) {
+        if (mSelectedItems[i]) {
+          selectedItems.add(dpiList[i])
+        }
       }
+      return selectedItems
     }
-    return selectedItems;
-  }
 }

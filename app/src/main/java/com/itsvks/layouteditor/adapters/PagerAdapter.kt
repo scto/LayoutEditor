@@ -1,123 +1,106 @@
-package com.itsvks.layouteditor.adapters;
+package com.itsvks.layouteditor.adapters
 
-import android.graphics.drawable.Drawable;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-import java.util.ArrayList;
-import java.util.List;
+import android.graphics.drawable.Drawable
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
-public class PagerAdapter {
-  private Adapter adapter;
+class PagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) {
+  private val adapter: Adapter
 
-  private ViewPager2 pager;
-  private TabLayout layout;
+  private var pager: ViewPager2? = null
+  private var layout: TabLayout? = null
 
-  private List<Fragment> fragmentList = new ArrayList<>();
-  private List<CharSequence> fragmentTitleList = new ArrayList<>();
-  private List<Drawable> fragmentIconList = new ArrayList<>();
+  private val fragmentList: MutableList<Fragment> = ArrayList()
+  private val fragmentTitleList: MutableList<CharSequence?> = ArrayList()
+  private val fragmentIconList: MutableList<Drawable> = ArrayList()
 
-  private class Adapter extends FragmentStateAdapter {
-    public Adapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
-      super(fragmentManager, lifecycle);
+  private inner class Adapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :
+    FragmentStateAdapter(fragmentManager, lifecycle) {
+    override fun getItemCount(): Int {
+      return fragmentList.size
     }
 
-    @Override
-    public int getItemCount() {
-      return fragmentList.size();
-    }
-
-    @Override
-    public Fragment createFragment(int position) {
-      return fragmentList.get(position);
+    override fun createFragment(position: Int): Fragment {
+      return fragmentList[position]
     }
   }
 
-  public PagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
-    adapter = new Adapter(fragmentManager, lifecycle);
+  init {
+    adapter = Adapter(fragmentManager, lifecycle)
   }
 
-  public void setup(ViewPager2 pager, TabLayout layout) {
-    this.pager = pager;
-    this.layout = layout;
+  fun setup(pager: ViewPager2?, layout: TabLayout?) {
+    this.pager = pager
+    this.layout = layout
   }
 
-  public void addFragmentToAdapter(Fragment fragment, CharSequence title) {
-    fragmentList.add(fragment);
-    fragmentTitleList.add(title);
+  fun addFragmentToAdapter(fragment: Fragment, title: CharSequence?) {
+    fragmentList.add(fragment)
+    fragmentTitleList.add(title)
   }
 
-  public void addFragmentToAdapter(Fragment fragment, CharSequence title, Drawable icon) {
-    fragmentList.add(fragment);
-    fragmentTitleList.add(title);
-    fragmentIconList.add(icon);
-  }
-    
-  public int getFragmentsCount() {
-    return fragmentList.size();
-  }
-    
-  public Fragment getFragmentAt(int position) {
-    if (fragmentList.get(position) == null) return fragmentList.get(0);
-    return fragmentList.get(position);
-  }
-    
-  public CharSequence getFragmentTitleAt(int position) {
-    if (fragmentTitleList.get(position) == null) return fragmentTitleList.get(0);
-    return fragmentTitleList.get(position);
+  fun addFragmentToAdapter(fragment: Fragment, title: CharSequence?, icon: Drawable) {
+    fragmentList.add(fragment)
+    fragmentTitleList.add(title)
+    fragmentIconList.add(icon)
   }
 
-  public Drawable getFragmentIconAt(int position) {
-    if (fragmentIconList.get(position) == null) return fragmentIconList.get(0);
-    return fragmentIconList.get(position);
+  val fragmentsCount: Int
+    get() = fragmentList.size
+
+  fun getFragmentAt(position: Int): Fragment {
+    return fragmentList[position]
   }
 
-  public Fragment getFragmentWithTitle(CharSequence title) {
-    for (int i = 0; i < getFragmentsCount(); i++) {
-      if (title == getFragmentTitleAt(i)) {
-        return getFragmentAt(i);
+  fun getFragmentTitleAt(position: Int): CharSequence? {
+    if (fragmentTitleList[position] == null) return fragmentTitleList[0]
+    return fragmentTitleList[position]
+  }
+
+  fun getFragmentIconAt(position: Int): Drawable {
+    return fragmentIconList[position]
+  }
+
+  fun getFragmentWithTitle(title: CharSequence): Fragment {
+    for (i in 0 until fragmentsCount) {
+      if (title === getFragmentTitleAt(i)) {
+        return getFragmentAt(i)
       }
     }
-    return fragmentList.get(0);
+    return fragmentList[0]
   }
 
-  public int getFragmentPosition(Fragment fragment) {
-    for (int i = 0; i < getFragmentsCount(); i++) {
-      if (fragment == fragmentList.get(i)) {
-        return i;
+  fun getFragmentPosition(fragment: Fragment): Int {
+    for (i in 0 until fragmentsCount) {
+      if (fragment === fragmentList[i]) {
+        return i
       }
     }
-    return 0;
+    return 0
   }
 
-  public void setupPager(int orientation) {
-    pager.setOrientation(orientation);
-    pager.setAdapter(adapter);
+  fun setupPager(orientation: Int) {
+    pager!!.orientation = orientation
+    pager!!.adapter = adapter
   }
 
-  public void setupMediatorWithIcon() {
-    TabLayoutMediator mediator = new TabLayoutMediator(layout, pager, new TabLayoutMediator.TabConfigurationStrategy() {
-      @Override
-      public void onConfigureTab(TabLayout.Tab tab, int position) {
-        tab.setText(getFragmentTitleAt(position));
-        tab.setIcon(getFragmentIconAt(position));
-      }
-    });
-    mediator.attach();
+  fun setupMediatorWithIcon() {
+    val mediator = TabLayoutMediator(layout!!, pager!!) { tab, position ->
+      tab.setText(getFragmentTitleAt(position))
+      tab.setIcon(getFragmentIconAt(position))
+    }
+    mediator.attach()
   }
 
-  public void setupMediatorWithoutIcon() {
-    TabLayoutMediator mediator = new TabLayoutMediator(layout, pager, new TabLayoutMediator.TabConfigurationStrategy() {
-      @Override
-      public void onConfigureTab(TabLayout.Tab tab, int position) {
-        tab.setText(getFragmentTitleAt(position));
-      }
-    });
-    mediator.attach();
+  fun setupMediatorWithoutIcon() {
+    val mediator = TabLayoutMediator(layout!!, pager!!) { tab: TabLayout.Tab, position: Int ->
+      tab.setText(getFragmentTitleAt(position))
+    }
+    mediator.attach()
   }
 }

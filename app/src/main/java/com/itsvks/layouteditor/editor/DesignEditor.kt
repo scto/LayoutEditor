@@ -42,7 +42,6 @@ import com.itsvks.layouteditor.editor.dialogs.StringDialog
 import com.itsvks.layouteditor.editor.dialogs.ViewDialog
 import com.itsvks.layouteditor.editor.initializer.AttributeInitializer
 import com.itsvks.layouteditor.editor.initializer.AttributeMap
-import com.itsvks.layouteditor.interfaces.AppliedAttributeClickListener
 import com.itsvks.layouteditor.managers.IdManager.addId
 import com.itsvks.layouteditor.managers.IdManager.getViewId
 import com.itsvks.layouteditor.managers.IdManager.removeId
@@ -275,7 +274,8 @@ class DesignEditor : LinearLayout {
               }
             }
             if (draggedView == null) {
-              @Suppress("UNCHECKED_CAST") val data: HashMap<String, Any> = event.localState as HashMap<String, Any>
+              @Suppress("UNCHECKED_CAST") val data: HashMap<String, Any> =
+                event.localState as HashMap<String, Any>
               val newView =
                 InvokeUtil.createView(
                   data[Constants.KEY_CLASS_NAME].toString(), context
@@ -502,23 +502,19 @@ class DesignEditor : LinearLayout {
       }
     }
 
-    val listener: AppliedAttributeClickListener =
-      object : AppliedAttributeClickListener {
-        override fun onRemoveButtonClick(position: Int) {
-          dialog.dismiss()
+    val appliedAttributesAdapter = AppliedAttributesAdapter(attrs, values)
 
-          val view = removeAttribute(target, keys[position])
-          showDefinedAttributes(view)
-        }
+    appliedAttributesAdapter.onClick = {
+      showAttributeEdit(target, keys[it])
+      dialog.dismiss()
+    }
 
-        override fun onClick(position: Int) {
-          showAttributeEdit(target, keys[position])
-          dialog.dismiss()
-        }
-      }
+    appliedAttributesAdapter.onRemoveButtonClick = {
+      dialog.dismiss()
 
-    val appliedAttributesAdapter =
-      AppliedAttributesAdapter(attrs, values, listener)
+      val view = removeAttribute(target, keys[it])
+      showDefinedAttributes(view)
+    }
 
     binding.attributesList.adapter = appliedAttributesAdapter
     binding.attributesList.layoutManager =

@@ -1,71 +1,51 @@
-package com.itsvks.layouteditor.adapters;
+package com.itsvks.layouteditor.adapters
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import androidx.appcompat.widget.TooltipCompat;
-import androidx.recyclerview.widget.RecyclerView;
-import com.itsvks.layouteditor.databinding.ShowAttributeItemBinding;
-import com.itsvks.layouteditor.interfaces.AppliedAttributeClickListener;
-import com.itsvks.layouteditor.utils.Constants;
-import java.util.HashMap;
-import java.util.List;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.widget.TooltipCompat
+import androidx.recyclerview.widget.RecyclerView
+import com.itsvks.layouteditor.databinding.ShowAttributeItemBinding
+import com.itsvks.layouteditor.utils.Constants
 
-public class AppliedAttributesAdapter extends RecyclerView.Adapter<AppliedAttributesAdapter.VH> {
+class AppliedAttributesAdapter(
+  private val attrs: List<HashMap<String, Any>>,
+  private val values: List<String>
+) : RecyclerView.Adapter<AppliedAttributesAdapter.VH>() {
 
-  private List<HashMap<String, Object>> attrs;
-  private List<String> values;
-  private AppliedAttributeClickListener clickListener;
+  var onClick: (Int) -> Unit = {}
+  var onRemoveButtonClick: (Int) -> Unit = {}
 
-  public AppliedAttributesAdapter(
-      List<HashMap<String, Object>> attrs,
-      List<String> values,
-      AppliedAttributeClickListener listener) {
-    this.attrs = attrs;
-    this.values = values;
-    this.clickListener = listener;
+  class VH(var binding: ShowAttributeItemBinding) : RecyclerView.ViewHolder(
+    binding.root
+  ) {
+    var btnRemove = binding.btnRemoveAttribute
+    var attributeName = binding.attributeName
+    var attributeValue = binding.attributeValue
   }
 
-  public class VH extends RecyclerView.ViewHolder {
-    public ShowAttributeItemBinding binding;
-    public ImageView btnRemove;
-    public TextView attributeName;
-    public TextView attributeValue;
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+    return VH(
+      ShowAttributeItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
+  }
 
-    public VH(ShowAttributeItemBinding binding) {
-      super(binding.getRoot());
-      this.binding = binding;
+  override fun onBindViewHolder(holder: VH, position: Int) {
+    holder.attributeName.text = attrs[position]["name"].toString()
+    holder.attributeValue.text = values[position]
 
-      btnRemove = binding.btnRemoveAttribute;
-      attributeName = binding.attributeName;
-      attributeValue = binding.attributeValue;
+    TooltipCompat.setTooltipText(holder.btnRemove, "Remove")
+    TooltipCompat.setTooltipText(holder.binding.root, attrs[position]["name"].toString())
+
+    if (attrs[position].containsKey(Constants.KEY_CAN_DELETE)) {
+      holder.btnRemove.visibility = View.GONE
     }
+
+    holder.binding.root.setOnClickListener { onClick(position) }
+    holder.btnRemove.setOnClickListener { onRemoveButtonClick(position) }
   }
 
-  @Override
-  public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-    return new VH(
-        ShowAttributeItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false));
-  }
-
-  @Override
-  public void onBindViewHolder(VH holder, int position) {
-    holder.attributeName.setText(attrs.get(position).get("name").toString());
-    holder.attributeValue.setText(values.get(position));
-    
-    TooltipCompat.setTooltipText(holder.btnRemove, "Remove");
-    TooltipCompat.setTooltipText(holder.binding.getRoot(), attrs.get(position).get("name").toString());
-
-    if (attrs.get(position).containsKey(Constants.KEY_CAN_DELETE))
-      holder.btnRemove.setVisibility(View.GONE);
-    holder.binding.getRoot().setOnClickListener(v -> clickListener.onClick(position));
-    holder.btnRemove.setOnClickListener(v -> clickListener.onRemoveButtonClick(position));
-  }
-
-  @Override
-  public int getItemCount() {
-    return attrs.size();
+  override fun getItemCount(): Int {
+    return attrs.size
   }
 }
