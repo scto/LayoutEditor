@@ -52,7 +52,7 @@ abstract class FilePicker(private val actvty: AppCompatActivity) {
    *
    * @param uri Nullable Uri
    */
-  abstract fun onPickFile(uri: Uri)
+  abstract fun onPickFile(uri: Uri?)
 
   /**
    * Method launch, takes in a String MIME type as a parameter

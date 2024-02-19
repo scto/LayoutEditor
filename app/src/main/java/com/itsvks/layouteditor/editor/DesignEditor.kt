@@ -15,6 +15,7 @@ import android.view.View.OnDragListener
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.TooltipCompat
@@ -62,7 +63,7 @@ class DesignEditor : LinearLayout {
   var viewType: ViewType? = null
     set(value) {
       isBlueprint = viewType == ViewType.BLUEPRINT
-      setBlueprintOnChilds()
+      setBlueprintOnChildren()
       invalidate()
       field = value
     }
@@ -121,7 +122,7 @@ class DesignEditor : LinearLayout {
     setDragListener(this)
 
     toggleStrokeWidgets()
-    setBlueprintOnChilds()
+    setBlueprintOnChildren()
   }
 
   override fun dispatchDraw(canvas: Canvas) {
@@ -157,9 +158,7 @@ class DesignEditor : LinearLayout {
 
   private fun drawDesign(canvas: Canvas) {
     paint.color = Constants.DESIGN_DASH_COLOR
-    setBackgroundColor(
-      MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface)
-    )
+    setBackgroundColor(Utils.getSurfaceColor(context))
     Utils.drawDashPathStroke(this, canvas, (paint))
   }
 
@@ -173,23 +172,19 @@ class DesignEditor : LinearLayout {
     invalidate()
   }
 
-  fun saveLayout() {
-    // Save the layout to disk
-  }
-
   private fun setTransition(group: ViewGroup) {
     if (group is RecyclerView) return
-    val transition = LayoutTransition()
-    transition.disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING)
-    transition.enableTransitionType(LayoutTransition.CHANGING)
-    transition.setDuration(150)
-    group.layoutTransition = transition
+    LayoutTransition().apply {
+      disableTransitionType(LayoutTransition.CHANGE_DISAPPEARING)
+      enableTransitionType(LayoutTransition.CHANGING)
+      setDuration(150)
+    }.also { group.layoutTransition = it }
   }
 
   private fun toggleStrokeWidgets() {
     try {
-      for (view: View in viewAttributeMap.keys) {
-        val cls: Class<*> = view.javaClass
+      for (view in viewAttributeMap.keys) {
+        val cls = view.javaClass
         val method = cls.getMethod("setStrokeEnabled", Boolean::class.javaPrimitiveType)
         method.invoke(view, isShowStroke)
       }
@@ -198,10 +193,10 @@ class DesignEditor : LinearLayout {
     }
   }
 
-  private fun setBlueprintOnChilds() {
+  private fun setBlueprintOnChildren() {
     try {
-      for (view: View in viewAttributeMap.keys) {
-        val cls: Class<*> = view.javaClass
+      for (view in viewAttributeMap.keys) {
+        val cls = view.javaClass
         val method = cls.getMethod("setBlueprint", Boolean::class.javaPrimitiveType)
         method.invoke(view, isBlueprint)
       }
@@ -293,6 +288,8 @@ class DesignEditor : LinearLayout {
               }
               newView.minimumWidth = Utils.pxToDp(context, 20)
               newView.minimumHeight = Utils.pxToDp(context, 20)
+
+              if (newView is EditText) newView.isFocusable = false
 
               val map = AttributeMap()
               map.putValue("android:layout_width", "wrap_content")

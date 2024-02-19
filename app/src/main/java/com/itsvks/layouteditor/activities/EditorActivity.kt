@@ -23,7 +23,6 @@ import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.TooltipCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.IntentCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -144,12 +143,12 @@ class EditorActivity : BaseActivity() {
   private fun defineXmlPicker() {
     xmlPicker =
       object : FilePicker(this) {
-        override fun onPickFile(uri: Uri) {
+        override fun onPickFile(uri: Uri?) {
           if (FileUtil.isDownloadsDocument(uri)) {
             make(binding.root, string.select_from_storage).showAsError()
             return
           }
-          val path = uri.path
+          val path = uri?.path
           if (path != null && path.endsWith(".xml")) {
             val xml = FileUtil.readFromUri(uri, this@EditorActivity)
             val xmlConverted = ConvertImportedXml(xml).getXmlConverted(this@EditorActivity)

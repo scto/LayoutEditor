@@ -543,8 +543,11 @@ object FileUtil {
    * @param uri The Uri to check.
    * @return Whether the Uri authority is DownloadsProvider.
    */
-  fun isDownloadsDocument(uri: Uri): Boolean {
-    return "com.android.providers.downloads.documents" == uri.authority
+  fun isDownloadsDocument(uri: Uri?): Boolean {
+    if (uri != null) {
+      return "com.android.providers.downloads.documents" == uri.authority
+    }
+    return false
   }
 
   /**
