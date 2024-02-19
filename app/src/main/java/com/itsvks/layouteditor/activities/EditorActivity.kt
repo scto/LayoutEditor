@@ -466,6 +466,7 @@ class EditorActivity : BaseActivity() {
           R.id.view_type_design -> {
             binding.editorLayout.viewType = DesignEditor.ViewType.DESIGN
           }
+
           R.id.view_type_blueprint -> {
             binding.editorLayout.viewType = DesignEditor.ViewType.BLUEPRINT
           }
@@ -536,7 +537,7 @@ class EditorActivity : BaseActivity() {
     ) { _, _ -> }
     builder.setPositiveButton(string.create) { _, _ ->
       createNewLayout(
-        "${editText.getText().toString()}.xml", ""
+        "${editText.getText().toString().replace(" ", "_").lowercase()}.xml", ""
       )
     }
 
@@ -612,7 +613,9 @@ class EditorActivity : BaseActivity() {
       string.rename
     ) { _, _ ->
       val path: String = layouts[pos].path
-      val newPath = "${path.substring(0, path.lastIndexOf("/"))}/${editText.text.toString()}.xml"
+      val newPath = "${path.substring(0, path.lastIndexOf("/"))}/${
+        editText.text.toString().replace(" ", "_").lowercase()
+      }.xml"
       layouts[pos].rename(newPath)
       if (layouts[pos] === project.currentLayout) openLayout(layouts[pos])
       layoutAdapter.notifyItemChanged(pos)

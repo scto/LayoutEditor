@@ -131,4 +131,5 @@
   <string name="large">Large</string>
   <string name="invalid_name">Invalid Name</string>
   <string name="hmmm">¯⁠⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯</string>
+  <string name="msg_symbol_not_allowed">The name must not contain symbols.</string>
 </resources>

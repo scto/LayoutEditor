@@ -215,15 +215,9 @@ public class NameErrorChecker {
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
         return;
       }
-      if (name.contains(" ")) {
+      if (!Pattern.matches("[a-z][A-Za-z0-9_\\s]*", name)) {
         inputLayout.setErrorEnabled(true);
-        inputLayout.setError(dialog.getContext().getString(R.string.msg_space_not_allowed));
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-        return;
-      }
-      if (!Pattern.matches("[a-z][a-z0-9_]*", name)) {
-        inputLayout.setErrorEnabled(true);
-        inputLayout.setError(dialog.getContext().getString(R.string.msg_only_letters_and_numbers));
+        inputLayout.setError(dialog.getContext().getString(R.string.msg_symbol_not_allowed));
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
         return;
       }
