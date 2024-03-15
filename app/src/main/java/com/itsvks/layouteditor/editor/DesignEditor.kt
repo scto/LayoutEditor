@@ -299,7 +299,7 @@ class DesignEditor : LinearLayout {
                   .lowercase()
               )
               IdManager.addNewId(newView, id)
-              map.putValue("android:id", id)
+              map.putValue("android:id", "@+id/$id")
               map.putValue("android:layout_width", "wrap_content")
               map.putValue("android:layout_height", "wrap_content")
               viewAttributeMap[newView] = map
