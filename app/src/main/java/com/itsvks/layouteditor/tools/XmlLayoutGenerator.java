@@ -5,6 +5,9 @@ import android.view.ViewGroup;
 import android.widget.CalendarView;
 import android.widget.SearchView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -22,7 +25,7 @@ public class XmlLayoutGenerator {
 
   boolean useSuperclasses;
 
-  public String generate(DesignEditor editor, boolean useSuperclasses) {
+  public String generate(@NonNull DesignEditor editor, boolean useSuperclasses) {
     this.useSuperclasses = useSuperclasses;
 
     if (editor.getChildCount() == 0) {
@@ -30,10 +33,19 @@ public class XmlLayoutGenerator {
     }
     builder.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
     builder.append(
-        "<!--\n\tWelcome to LayoutEditor!\n\n"
-            + "\tWe are proud to present our innovative layout generator app that\n\tallows users to create and customize stunning layouts in no time.\n"
-            + "\tWith LayoutEditor, you can easily create beautiful and custom\n\tlayouts that are tailored to fit your unique needs.\n\n"
-            + "\tThank you for using LayoutEditor and we hope you enjoy our app!\n-->\n\n");
+      """
+        <!--
+        \tWelcome to LayoutEditor!
+
+        \tWe are proud to present our innovative layout generator app that
+        \tallows users to create and customize stunning layouts in no time.
+        \tWith LayoutEditor, you can easily create beautiful and custom
+        \tlayouts that are tailored to fit your unique needs.
+
+        \tThank you for using LayoutEditor and we hope you enjoy our app!
+        -->
+
+        """);
 
     return peek(editor.getChildAt(0), editor.getViewAttributeMap(), 0);
   }
