@@ -1,125 +1,110 @@
-package com.itsvks.layouteditor.editor.dialogs;
+package com.itsvks.layouteditor.editor.dialogs
 
-import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.itsvks.layouteditor.R
+import com.itsvks.layouteditor.databinding.TextinputlayoutBinding
+import com.itsvks.layouteditor.managers.IdManager.getIds
+import java.util.regex.Pattern
 
-import androidx.annotation.NonNull;
+class IdDialog(context: Context, savedValue: String) : AttributeDialog(context) {
+  private val textInputLayout: TextInputLayout
+  private val textInputEditText: TextInputEditText
 
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
-import com.itsvks.layouteditor.databinding.TextinputlayoutBinding;
-import com.itsvks.layouteditor.managers.IdManager;
+  private val ids: MutableList<String>
 
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.List;
-
-public class IdDialog extends AttributeDialog {
-
-  private TextInputLayout textInputLayout;
-  private TextInputEditText textInputEditText;
-
-  private List<String> ids;
-
-  /**
-   * Constructor of IdDialog
-   * 
-   * @param context The context of the application
-   * @param savedValue The saved value of the ID
-   */
-  public IdDialog(Context context, @NonNull String savedValue) {
-    super(context);
-
+  init {
     // Initialize the binding and savedValue variables
-    TextinputlayoutBinding binding = TextinputlayoutBinding.inflate(getDialog().getLayoutInflater());
+    val binding = TextinputlayoutBinding.inflate(dialog.layoutInflater)
 
     // Get all the IDs from the IdManager
-    ids = IdManager.getIds();
+    ids = getIds()
 
     // Initialize the TextInputLayout and set hint and prefix text
-    textInputLayout = binding.getRoot();
-    textInputLayout.setHint("Enter new ID");
-    textInputLayout.setPrefixText("@+id/");
+    textInputLayout = binding.root
+    textInputLayout.apply {
+      hint = "Enter new ID"
+      prefixText = "@+id/"
+    }
 
     // Initialize the TextInputEditText and set the text from the savedValue
-    textInputEditText = binding.textinputEdittext;
-    if (!savedValue.isEmpty()) {
-      ids.remove(savedValue.replace("@+id/", ""));
-      textInputEditText.setText(savedValue.replace("@+id/", ""));
+    textInputEditText = binding.textinputEdittext
+    if (savedValue.isNotEmpty()) {
+      ids.remove(savedValue.replace("@+id/", ""))
+      textInputEditText.setText(savedValue.replace("@+id/", ""))
     }
 
     // Add a TextWatcher to the TextInputEditText for checking errors
     textInputEditText.addTextChangedListener(
-        new TextWatcher() {
+      object : TextWatcher {
+        override fun beforeTextChanged(p1: CharSequence, p2: Int, p3: Int, p4: Int) {
+        }
 
-          @Override
-          public void beforeTextChanged(CharSequence p1, int p2, int p3, int p4) {}
+        override fun onTextChanged(p1: CharSequence, p2: Int, p3: Int, p4: Int) {
+        }
 
-          @Override
-          public void onTextChanged(CharSequence p1, int p2, int p3, int p4) {}
-
-          @Override
-          public void afterTextChanged(Editable p1) {
-            checkErrors();
-          }
-        });
+        override fun afterTextChanged(p1: Editable) {
+          checkErrors()
+        }
+      })
 
     // Set the view with a margin of 10dp
-    setView(textInputLayout, 10);
-    showKeyboardWhenOpen();
+    setView(textInputLayout, 10)
+    showKeyboardWhenOpen()
   }
 
   /**
    * Check errors in the TextInputEditText
    */
-  private void checkErrors() {
-    String text = textInputEditText.getText().toString();
+  private fun checkErrors() {
+    val text = textInputEditText.text.toString()
 
     // Check if the TextInputEditText is empty
     if (text.isEmpty()) {
-      textInputLayout.setErrorEnabled(true);
-      textInputLayout.setError("Field cannot be empty!");
-      setEnabled(false);
-      return;
+      textInputLayout.isErrorEnabled = true
+      textInputLayout.error = "Field cannot be empty!"
+      setEnabled(false)
+      return
     }
 
-    // Check if the text matches the pattern of only small letters(a-z) and numbers
-    if (!Pattern.matches("[a-z_][a-z0-9_]*", text)) {
-      textInputLayout.setErrorEnabled(true);
-      textInputLayout.setError("Only small letters(a-z) and numbers!");
-      setEnabled(false);
-      return;
+    if (!Pattern.matches("[a-z][A-Za-z0-9_\\s]*", text)) {
+      textInputLayout.isErrorEnabled = true
+      textInputLayout.error = dialog.context.getString(R.string.msg_symbol_not_allowed)
+      setEnabled(false)
+      return
     }
 
     // Check if the ID is already taken
-    for (String id : ids) {
-      if (id.equals(text)) {
-        textInputLayout.setErrorEnabled(true);
-        textInputLayout.setError("Current ID is unavailable!");
-        setEnabled(false);
-        return;
+    for (id in ids) {
+      if (id == text) {
+        textInputLayout.isErrorEnabled = true
+        textInputLayout.error = "Current ID is unavailable!"
+        setEnabled(false)
+        return
       }
     }
 
     // No errors detected
-    textInputLayout.setErrorEnabled(false);
-    textInputLayout.setError("");
-    setEnabled(true);
+    textInputLayout.isErrorEnabled = false
+    textInputLayout.error = ""
+    setEnabled(true)
   }
 
-  @Override
-  public void show() {
-    super.show();
+  override fun show() {
+    super.show()
 
     // Request focus to the TextInputEditText and check errors
-    requestEditText(textInputEditText);
-    checkErrors();
+    requestEditText(textInputEditText)
+    checkErrors()
   }
 
-  @Override
-  protected void onClickSave() {
+  override fun onClickSave() {
     // Call the onSave method and pass the ID
-    listener.onSave("@+id/" + textInputEditText.getText().toString());
+    listener.onSave(
+      "@+id/${textInputEditText.text.toString().lowercase().replace(" ".toRegex(), "_")}"
+    )
   }
 }
