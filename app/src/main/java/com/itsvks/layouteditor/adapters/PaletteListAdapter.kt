@@ -2,19 +2,24 @@ package com.itsvks.layouteditor.adapters
 
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.DragShadowBuilder
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.itsvks.layouteditor.R
 import com.itsvks.layouteditor.databinding.LayoutPaletteItemBinding
 import com.itsvks.layouteditor.utils.InvokeUtil.getMipmapId
 import com.itsvks.layouteditor.utils.InvokeUtil.getSuperClassName
 
-class PaletteListAdapter(private val drawerLayout: DrawerLayout) :
-  RecyclerView.Adapter<PaletteListAdapter.ViewHolder>() {
+class PaletteListAdapter private constructor(
+  private val drawerLayout: DrawerLayout?,
+  private val behavior: BottomSheetBehavior<*>?
+) : RecyclerView.Adapter<PaletteListAdapter.ViewHolder>() {
+
+  constructor(drawerLayout: DrawerLayout) : this(drawerLayout, null)
+  constructor(behavior: BottomSheetBehavior<*>) : this(null, behavior)
+
   private lateinit var tab: List<HashMap<String, Any>>
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,20 +37,15 @@ class PaletteListAdapter(private val drawerLayout: DrawerLayout) :
     binding.name.text = widgetItem["name"].toString()
     binding.className.text = getSuperClassName(widgetItem["className"].toString())
 
-    binding
-      .root
-      .setOnLongClickListener {
-        if (ViewCompat.startDragAndDrop(
-            it, null, DragShadowBuilder(it), widgetItem, 0
-          )
-        ) {
-          drawerLayout.closeDrawers()
-        }
-        true
+    binding.root.setOnLongClickListener {
+      if (it.startDragAndDrop(null, View.DragShadowBuilder(it), widgetItem, 0)) {
+        drawerLayout?.closeDrawers()
+        behavior?.state = BottomSheetBehavior.STATE_HIDDEN
       }
+      true
+    }
 
-    binding
-      .root.animation = AnimationUtils.loadAnimation(
+    binding.root.animation = AnimationUtils.loadAnimation(
       holder.itemView.context, R.anim.project_list_animation
     )
   }

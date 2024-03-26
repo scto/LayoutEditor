@@ -45,6 +45,7 @@ import com.itsvks.layouteditor.editor.DesignEditor
 import com.itsvks.layouteditor.editor.DeviceConfiguration
 import com.itsvks.layouteditor.editor.DeviceSize
 import com.itsvks.layouteditor.editor.convert.ConvertImportedXml
+import com.itsvks.layouteditor.fragments.EditorBottomSheetFragment
 import com.itsvks.layouteditor.managers.DrawableManager
 import com.itsvks.layouteditor.managers.IdManager.clear
 import com.itsvks.layouteditor.managers.ProjectManager
@@ -248,20 +249,14 @@ class EditorActivity : BaseActivity() {
   private fun setupDrawerNavigationRail() {
     val fab = binding.paletteNavigation.headerView?.findViewById<FloatingActionButton>(R.id.fab)
 
-    val paletteMenu = binding.paletteNavigation.menu
-    paletteMenu.add(Menu.NONE, 0, Menu.NONE, Constants.TAB_TITLE_COMMON).setIcon(R.drawable.android)
-    paletteMenu.add(Menu.NONE, 1, Menu.NONE, Constants.TAB_TITLE_TEXT)
-      .setIcon(R.mipmap.ic_palette_text_view)
-    paletteMenu.add(Menu.NONE, 2, Menu.NONE, Constants.TAB_TITLE_BUTTONS)
-      .setIcon(R.mipmap.ic_palette_button)
-    paletteMenu.add(Menu.NONE, 3, Menu.NONE, Constants.TAB_TITLE_WIDGETS)
-      .setIcon(R.mipmap.ic_palette_view)
-    paletteMenu.add(Menu.NONE, 4, Menu.NONE, Constants.TAB_TITLE_LAYOUTS)
-      .setIcon(R.mipmap.ic_palette_relative_layout)
-    paletteMenu.add(Menu.NONE, 5, Menu.NONE, Constants.TAB_TITLE_CONTAINERS)
-      .setIcon(R.mipmap.ic_palette_view_pager)
-    paletteMenu.add(Menu.NONE, 6, Menu.NONE, Constants.TAB_TITLE_LEGACY)
-      .setIcon(R.mipmap.ic_palette_grid_layout)
+    addPaletteMenu(0, Constants.TAB_TITLE_COMMON, R.drawable.android)
+    addPaletteMenu(1, Constants.TAB_TITLE_TEXT, R.mipmap.ic_palette_text_view)
+    addPaletteMenu(2, Constants.TAB_TITLE_BUTTONS, R.mipmap.ic_palette_button)
+    addPaletteMenu(3, Constants.TAB_TITLE_WIDGETS, R.mipmap.ic_palette_view)
+    addPaletteMenu(4, Constants.TAB_TITLE_LAYOUTS, R.mipmap.ic_palette_relative_layout)
+    addPaletteMenu(5, Constants.TAB_TITLE_CONTAINERS, R.mipmap.ic_palette_view_pager)
+    addPaletteMenu(6, Constants.TAB_TITLE_GOOGLE, R.drawable.google)
+//    addPaletteMenu(7, Constants.TAB_TITLE_LEGACY, R.mipmap.ic_palette_grid_layout)
 
     binding.listView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
@@ -296,6 +291,10 @@ class EditorActivity : BaseActivity() {
     clear()
   }
 
+  private fun addPaletteMenu(id: Int, title: String, icon: Int) {
+    with(binding.paletteNavigation) { menu.add(Menu.NONE, id, Menu.NONE, title).setIcon(icon) }
+  }
+
   private fun replaceListViewAdapter(adapter: RecyclerView.Adapter<*>) {
     binding.listView.adapter = adapter
   }
@@ -321,7 +320,10 @@ class EditorActivity : BaseActivity() {
       }
 
       R.id.show_structure -> {
-        drawerLayout.openDrawer(GravityCompat.END)
+//        drawerLayout.openDrawer(GravityCompat.END)
+        EditorBottomSheetFragment.newInstance(binding.editorLayout)
+          .show(supportFragmentManager, "dialog")
+//        showPalette()
         return true
       }
 
@@ -367,7 +369,7 @@ class EditorActivity : BaseActivity() {
             this, createBitmapFromView(binding.editorLayout), project.name
           )
         )
-        else make(binding.root, "Add some views...")
+        else make(binding.root, "Add some widgets...")
           .setFadeAnimation()
           .setType(SBUtils.Type.INFO)
           .show()

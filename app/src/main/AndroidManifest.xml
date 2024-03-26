@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-  xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools">
 
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission
+    android:name="android.permission.READ_MEDIA_IMAGES"
     tools:ignore="SelectedPhotoAccess" />
   <uses-permission android:name="android.permission.VIBRATE" />
 
@@ -38,8 +39,8 @@
       android:name=".activities.ShowXMLActivity"
       android:configChanges="orientation|keyboardHidden|screenSize"
       android:exported="true"
-      android:windowSoftInputMode="adjustResize"
-      android:parentActivityName=".activities.EditorActivity" />
+      android:parentActivityName=".activities.EditorActivity"
+      android:windowSoftInputMode="adjustResize" />
     <activity
       android:name=".activities.CrashActivity"
       android:exported="true" />
@@ -55,6 +56,10 @@
       android:name=".activities.PreviewDrawableActivity"
       android:exported="true"
       android:parentActivityName=".activities.ResourceManagerActivity" />
+
+    <meta-data
+      android:name="com.google.android.gms.ads.APPLICATION_ID"
+      android:value="ca-app-pub-3379334818862611~2097504475" />
 
   </application>
 

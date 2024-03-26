@@ -24,7 +24,7 @@ import java.io.OutputStream
 import java.net.URLDecoder
 
 object FileUtil {
-  fun readFromUri(uri: Uri, context: Context): String? {
+  fun readFromUri(uri: Uri, context: Context): String {
     try {
       val inputStream = context.contentResolver.openInputStream(uri)
 
@@ -33,7 +33,7 @@ object FileUtil {
 
       // Creates a StringBuilder to store the file's contents
       val sb = StringBuilder()
-      var line: String?
+      var line: String
 
       // Reads each line from the file and adds it to StringBuilder
       while ((reader.readLine().also { line = it }) != null) {
@@ -50,7 +50,7 @@ object FileUtil {
       e.printStackTrace()
     }
 
-    return null
+    return ""
   }
 
   @JvmStatic

@@ -139,6 +139,7 @@ public class Utils {
       values.put(MediaStore.Images.Media.DATA, file.getAbsolutePath());
 
       Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+      assert uri != null;
       savedImageURL = uri.toString();
 
       Log.d("MediaUtils", "Image saved to gallery: " + savedImageURL);
@@ -157,24 +158,21 @@ public class Utils {
 
   public static VectorMasterDrawable getVectorDrawableAsync(Context context, Uri uri) {
     Callable<VectorMasterDrawable> callable =
-      new Callable<VectorMasterDrawable>() {
-        @Override
-        public VectorMasterDrawable call() throws Exception {
-          // Load the drawable from file
-          InputStream is = context.getContentResolver().openInputStream(uri);
-          VectorMasterDrawable drawable = new VectorMasterDrawable(context);
-          drawable.setInputStream(is);
-          is.close();
-          return drawable;
-        }
+      () -> {
+        // Load the drawable from file
+        InputStream is = context.getContentResolver().openInputStream(uri);
+        VectorMasterDrawable drawable = new VectorMasterDrawable(context);
+        drawable.setInputStream(is);
+        assert is != null;
+        is.close();
+        return drawable;
       };
 
     FutureTask<VectorMasterDrawable> futureTask = new FutureTask<>(callable);
     new Thread(futureTask).start();
 
     try {
-      VectorMasterDrawable drawable = futureTask.get();
-      return drawable;
+      return futureTask.get();
     } catch (ExecutionException | InterruptedException e) {
       e.printStackTrace();
       return null;

@@ -1,14 +1,12 @@
-<resources xmlns:tools="http://schemas.android.com/tools"
-  tools:override="true"
-  tools:ignore="MissingTranslation,PrivateResource,ExtraTranslation">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,PrivateResource,ExtraTranslation" tools:override="true">
   <string name="app_name">Layout Editor</string>
   <string name="app_slogan">Create Awesome UI!</string>
-  <string name="home">HOME</string>
-  <string name="preference">PREFERENCES</string>
-  <string name="github">GITHUB</string>
-  <string name="about">ABOUT</string>
-  <string name="share">SHARE</string>
-  <string name="open_source_licence">OPEN SOURCE LICENCES</string>
+  <string name="home">Home</string>
+  <string name="preference">Preference</string>
+  <string name="github">GitHub</string>
+  <string name="about">About</string>
+  <string name="share">Share</string>
+  <string name="open_source_licence">Open Source Licences</string>
   <string name="projects">Projects</string>
   <string name="title_preference">Preferences</string>
   <string name="title_about">About</string>
@@ -134,4 +132,6 @@
   <string name="msg_symbol_not_allowed">The name must not contain symbols.</string>
   <string name="title_save_layout">Save layout</string>
   <string name="msg_save_layout">Do you want to save the layout?</string>
+  <!-- TODO: Remove or change this placeholder text -->
+  <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

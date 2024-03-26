@@ -23,11 +23,6 @@ class LayoutEditor : Application() {
   val isAtLeastTiramisu: Boolean
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
-  fun updateTheme(nightMode: Int, activity: Activity) {
-    AppCompatDelegate.setDefaultNightMode(nightMode)
-    activity.recreate()
-  }
-
   companion object {
     var instance: LayoutEditor? = null
       private set

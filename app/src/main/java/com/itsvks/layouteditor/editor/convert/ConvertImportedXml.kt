@@ -9,7 +9,7 @@ import java.io.StringReader
 import java.util.regex.Pattern
 import javax.xml.parsers.DocumentBuilderFactory
 
-class ConvertImportedXml(private val xml: String?) {
+class ConvertImportedXml(private val xml: String) {
 
   fun getXmlConverted(context: Context): String? {
     var convertedXml = xml
@@ -17,9 +17,7 @@ class ConvertImportedXml(private val xml: String?) {
     if (isWellFormed(xml)) {
       val pattern = "<([a-zA-Z0-9]+\\.)*([a-zA-Z0-9]+)"
 
-      val matcher = Pattern.compile(pattern).matcher(
-        xml.toString()
-      )
+      val matcher = Pattern.compile(pattern).matcher(xml)
       try {
         while (matcher.find()) {
           val fullTag = matcher.group(0)?.replace("<", "")
@@ -29,12 +27,8 @@ class ConvertImportedXml(private val xml: String?) {
             JSONObject(FileUtil.readFromAsset("widgetclasses.json", context))
 
           val widgetClass = widgetName?.let { classes.getString(it) }
-          if (convertedXml != null) {
-            convertedXml = convertedXml.replace("<$fullTag", "<$widgetClass")
-          }
-          if (convertedXml != null) {
-            convertedXml = convertedXml.replace("</$fullTag", "</$widgetClass")
-          }
+          convertedXml = convertedXml.replace("<$fullTag", "<$widgetClass")
+          convertedXml = convertedXml.replace("</$fullTag", "</$widgetClass")
         }
       } catch (e: Exception) {
         e.printStackTrace()

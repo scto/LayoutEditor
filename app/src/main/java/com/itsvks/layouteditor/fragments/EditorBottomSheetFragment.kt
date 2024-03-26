@@ -1,93 +1,112 @@
 package com.itsvks.layouteditor.fragments
 
+import android.os.Build
 import android.os.Bundle
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.DragShadowBuilder
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.itsvks.layouteditor.R
-import com.itsvks.layouteditor.databinding.FragmentEditorBottomSheetItemBinding
+import com.itsvks.layouteditor.adapters.PaletteListAdapter
 import com.itsvks.layouteditor.databinding.FragmentEditorBottomSheetBinding
+import com.itsvks.layouteditor.editor.DesignEditor
+import com.itsvks.layouteditor.managers.ProjectManager
+import com.itsvks.layouteditor.utils.Constants
 
-// TODO: Customize parameter argument names
-const val ARG_ITEM_COUNT = "item_count"
+const val ARG_EDITOR = "editor"
 
-/**
- *
- * A fragment that shows a list of items as a modal bottom sheet.
- *
- * You can show this modal bottom sheet from your activity like this:
- * <pre>
- *    EditorBottomSheetFragment.newInstance(30).show(supportFragmentManager, "dialog")
- * </pre>
- */
 class EditorBottomSheetFragment : BottomSheetDialogFragment() {
 
   private var _binding: FragmentEditorBottomSheetBinding? = null
+  private val binding get() = requireNotNull(_binding) { "Fragment has been destroyed." }
 
-  // This property is only valid between onCreateView and
-  // onDestroyView.
-  private val binding get() = _binding!!
+  private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
+  private lateinit var editor: DesignEditor
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    arguments?.let {
+      editor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        it.getSerializable(ARG_EDITOR, DesignEditor::class.java)!!
+      } else {
+        it.getSerializable(ARG_EDITOR) as DesignEditor
+      }
+    }
+  }
 
   override fun onCreateView(
-    inflater: LayoutInflater, container: ViewGroup?,
+    inflater: LayoutInflater,
+    container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View? {
-
+  ): View {
     _binding = FragmentEditorBottomSheetBinding.inflate(inflater, container, false)
     return binding.root
-
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    list.layoutManager = GridLayoutManager(context, 2)
-    activity?.findViewById<RecyclerView>(R.id.list)?.adapter =
-      arguments?.getInt(ARG_ITEM_COUNT)?.let { ItemAdapter(it) }
-  }
+    BottomSheetBehavior.from(dialog!!.findViewById(com.google.android.material.R.id.design_bottom_sheet))
+      .also { bottomSheetBehavior = it }
 
-  private inner class ViewHolder internal constructor(binding: FragmentEditorBottomSheetItemBinding) :
-    RecyclerView.ViewHolder(binding.root) {
+    bottomSheetBehavior.apply {
+      peekHeight = 650
+      saveFlags = BottomSheetBehavior.SAVE_ALL
+      isDraggable = true
+      isFitToContents = false
+      addBottomSheetCallback(object : BottomSheetCallback() {
+        override fun onStateChanged(view: View, state: Int) {
+          if (state == BottomSheetBehavior.STATE_HIDDEN) dismiss()
+        }
 
-    internal val text: TextView = binding.text
-  }
-
-  private inner class itemAdapter internal constructor(private val mItemCount: Int) :
-    RecyclerView.Adapter<ViewHolder>() {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-
-      return ViewHolder(
-        FragmentEditorBottomSheetItemBinding.inflate(
-          LayoutInflater.from(parent.context),
-          parent,
-          false
-        )
-      )
-
+        override fun onSlide(view: View, v: Float) {}
+      })
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-      holder.text.text = position.toString()
-    }
+    addTab(Constants.TAB_TITLE_COMMON, R.drawable.android)
+    addTab(Constants.TAB_TITLE_TEXT, R.mipmap.ic_palette_text_view)
+    addTab(Constants.TAB_TITLE_BUTTONS, R.mipmap.ic_palette_button)
+    addTab(Constants.TAB_TITLE_WIDGETS, R.mipmap.ic_palette_view)
+    addTab(Constants.TAB_TITLE_LAYOUTS, R.mipmap.ic_palette_relative_layout)
+    addTab(Constants.TAB_TITLE_CONTAINERS, R.mipmap.ic_palette_view_pager)
+    addTab(Constants.TAB_TITLE_GOOGLE, R.drawable.google)
+    addTab(Constants.TAB_TITLE_LEGACY, R.mipmap.ic_palette_grid_layout)
 
-    override fun getItemCount(): Int {
-      return mItemCount
+    val adapter = PaletteListAdapter(bottomSheetBehavior)
+    adapter.submitPaletteList(ProjectManager.instance.getPalette(0))
+
+    binding.tabLayout.addOnTabSelectedListener(object : OnTabSelectedListener {
+      override fun onTabSelected(tab: TabLayout.Tab) {
+        adapter.submitPaletteList(ProjectManager.instance.getPalette(tab.position))
+      }
+
+      override fun onTabUnselected(tab: TabLayout.Tab) {}
+      override fun onTabReselected(tab: TabLayout.Tab) {}
+    })
+
+    binding.list.apply {
+      layoutManager = GridLayoutManager(context, 2)
+      this.adapter = adapter
+    }
+  }
+
+  private fun addTab(title: String, icon: Int) {
+    binding.tabLayout.apply {
+      addTab(newTab().setText(title).setIcon(icon))
     }
   }
 
   companion object {
-
-    // TODO: Customize parameters
-    fun newInstance(itemCount: Int): EditorBottomSheetFragment =
+    fun newInstance(editor: DesignEditor): EditorBottomSheetFragment =
       EditorBottomSheetFragment().apply {
         arguments = Bundle().apply {
-          putInt(ARG_ITEM_COUNT, itemCount)
+          putSerializable(ARG_EDITOR, editor)
         }
       }
-
   }
 
   override fun onDestroyView() {

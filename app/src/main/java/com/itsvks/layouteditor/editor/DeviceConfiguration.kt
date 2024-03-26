@@ -1,3 +1,5 @@
 package com.itsvks.layouteditor.editor
 
-class DeviceConfiguration(var size: DeviceSize)
+import java.io.Serializable
+
+class DeviceConfiguration(var size: DeviceSize) : Serializable

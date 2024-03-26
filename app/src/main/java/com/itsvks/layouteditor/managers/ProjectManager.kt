@@ -8,7 +8,6 @@ import com.itsvks.layouteditor.utils.Constants
 import com.itsvks.layouteditor.utils.FileUtil
 import java.lang.reflect.Type
 import java.util.Locale
-import java.util.Objects
 import java.util.concurrent.CompletableFuture
 
 class ProjectManager private constructor() {
@@ -62,7 +61,7 @@ class ProjectManager private constructor() {
     paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_WIDGETS))
     paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_LAYOUTS))
     paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_CONTAINERS))
-    // paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_GOOGLE));
+    paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_GOOGLE));
     paletteList.add(convertJsonToJavaObject(gson, type, Constants.PALETTE_LEGACY))
   }
 

@@ -41,7 +41,7 @@ open class BaseActivity : AppCompatActivity() {
   }
 
   companion object {
-    var instance: BaseActivity? = null
+    lateinit var instance: BaseActivity
       private set
   }
 }

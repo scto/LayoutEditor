@@ -58,9 +58,10 @@ import com.itsvks.layouteditor.utils.FileUtil
 import com.itsvks.layouteditor.utils.InvokeUtil
 import com.itsvks.layouteditor.utils.Utils
 import com.itsvks.layouteditor.views.StructureView
+import java.io.Serializable
 import kotlin.math.abs
 
-class DesignEditor : LinearLayout {
+class DesignEditor : LinearLayout, Serializable {
   var viewType: ViewType? = null
     set(value) {
       isBlueprint = viewType == ViewType.BLUEPRINT
@@ -248,6 +249,7 @@ class DesignEditor : LinearLayout {
                 try {
                   parent.addView(shadow, newIndex)
                 } catch (_: IllegalStateException) {
+                  // ignore
                 }
               }
             } else {
@@ -270,8 +272,8 @@ class DesignEditor : LinearLayout {
               }
             }
             if (draggedView == null) {
-              @Suppress("UNCHECKED_CAST") val data: HashMap<String, Any> =
-                event.localState as HashMap<String, Any>
+              @Suppress("UNCHECKED_CAST")
+              val data = event.localState as HashMap<String, Any>
               val newView =
                 InvokeUtil.createView(
                   data[Constants.KEY_CLASS_NAME].toString(), context
